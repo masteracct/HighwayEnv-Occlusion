@@ -45,6 +45,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "jupyter_sphinx",
     "myst_parser",
+    "sphinx_github_changelog",
 ]
 
 autodoc_default_flags = [
@@ -73,6 +74,9 @@ napoleon_custom_sections = [("Returns", "params_style")]
 autoclass_content = "both"
 autodoc_preserve_defaults = True
 
+# -- Auto Section Label configuration ----------------------------------------
+autosectionlabel_prefix_document = True
+
 # -- MyST configuration -----------------------------------------------------
 myst_enable_extensions = [
     "dollarmath",
@@ -83,7 +87,7 @@ myst_enable_extensions = [
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "furo"
+html_theme = "celshast"
 html_title = "HighwayEnv Documentation"
 html_baseurl = "https://highway-env.farama.org"
 html_copy_source = False
@@ -96,7 +100,7 @@ html_theme_options = {
     "description": "A collection of environments for autonomous driving and tactical decision-making tasks",
     "versioning": True,
     "source_repository": "https://github.com/Farama-Foundation/HighwayEnv/",
-    "source_branch": "master",
+    "source_branch": "main",
     "source_directory": "docs/",
 }
 html_context: Dict[str, Any] = {}

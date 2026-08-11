@@ -6,11 +6,11 @@
 
 # Racetrack
 
-A continuous control environment, where the he agent has to follow the tracks while avoiding collisions with other vehicles.
+A continuous control environment, where the agent has to follow the tracks while avoiding collisions with other vehicles.
 
 Credits and many thanks to [@supperted825](https://github.com/supperted825) for the [idea and initial implementation](https://github.com/Farama-Foundation/HighwayEnv/issues/231).
 
-```{figure} https://raw.githubusercontent.com/Farama-Foundation/HighwayEnv/gh-media/docs/media/racetrack-env.gif
+```{figure} ../_static/animations/environments/racetrack-env.gif
 :align: center
 :name: fig:racetrack_env
 :width: 80%
@@ -50,23 +50,26 @@ See {ref}`road-neighbour-vehicles` for details.
     "action": {
         "type": "ContinuousAction",
         "longitudinal": False,
-        "lateral": True
+        "lateral": True,
+        "target_speeds": [0, 5, 10],
     },
     "simulation_frequency": 15,
     "policy_frequency": 5,
     "duration": 300,
     "collision_reward": -1,
     "lane_centering_cost": 4,
+    "lane_centering_reward": 1,
     "action_reward": -0.3,
     "controlled_vehicles": 1,
     "other_vehicles": 1,
+    "speed_limit": 10.0,
+    "terminate_off_road": True,
     "screen_width": 600,
     "screen_height": 600,
     "centering_position": [0.5, 0.5],
-    "scaling": 7,
     "show_trajectories": False,
     "render_agent": True,
-    "offscreen_rendering": False
+    "offscreen_rendering": None
 }
 ```
 
@@ -74,6 +77,7 @@ More specifically, it is defined in:
 
 ```{eval-rst}
 .. automethod:: RacetrackEnv.default_config
+    :no-index:
 ```
 
 ## API

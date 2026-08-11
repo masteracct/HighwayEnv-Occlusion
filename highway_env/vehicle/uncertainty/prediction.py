@@ -70,10 +70,14 @@ class IntervalVehicle(LinearVehicle):
             timer,
         )
         self.theta_a_i = (
-            theta_a_i if theta_a_i is not None else LinearVehicle.ACCELERATION_RANGE
+            np.asarray(theta_a_i)
+            if theta_a_i is not None
+            else LinearVehicle.ACCELERATION_RANGE
         )
         self.theta_b_i = (
-            theta_b_i if theta_b_i is not None else LinearVehicle.STEERING_RANGE
+            np.asarray(theta_b_i)
+            if theta_b_i is not None
+            else LinearVehicle.STEERING_RANGE
         )
         self.data = data
         self.interval = VehicleInterval(self)
@@ -83,8 +87,8 @@ class IntervalVehicle(LinearVehicle):
         self.previous_target_lane_index = self.target_lane_index
 
     @classmethod
-    def create_from(cls, vehicle: LinearVehicle) -> IntervalVehicle:
-        v = cls(
+    def create_from(cls, vehicle: Vehicle) -> IntervalVehicle:
+        return cls(
             vehicle.road,
             vehicle.position,
             heading=vehicle.heading,
@@ -97,7 +101,6 @@ class IntervalVehicle(LinearVehicle):
             theta_b_i=getattr(vehicle, "theta_b_i", None),
             data=getattr(vehicle, "data", None),
         )
-        return v
 
     def step(self, dt: float, mode: str = "partial") -> None:
         self.store_trajectories()
@@ -221,6 +224,8 @@ class IntervalVehicle(LinearVehicle):
         """
         # Create longitudinal and lateral LPVs
         self.predictor_init()
+        self.lateral_lpv: LPV
+        self.longitudinal_lpv: LPV
 
         # Detect lane change and update intervals of local coordinates with the new frame
         if self.target_lane_index != self.previous_target_lane_index:
@@ -341,7 +346,7 @@ class IntervalVehicle(LinearVehicle):
         a_theta = lambda params: a + np.tensordot(phi, params, axes=[0, 0])
         return polytope(a_theta, parameter_box)
 
-    def get_front_interval(self) -> VehicleInterval:
+    def get_front_interval(self) -> VehicleInterval | None:
         # TODO: For now, we assume the front vehicle follows the models' front vehicle
         front_vehicle, _ = self.road.neighbour_vehicles(self)
         if front_vehicle:
@@ -349,8 +354,9 @@ class IntervalVehicle(LinearVehicle):
                 # Use interval from the observer estimate of the front vehicle
                 front_interval = front_vehicle.interval
             else:
-                # The front vehicle trajectory interval is not being estimated, so it should be considered as certain.
-                # We use a new observer created from that current vehicle state, which will have full certainty.
+                # The front vehicle trajectory interval is not being estimated, so it
+                # should be considered as certain. We use a new observer created from
+                # that current vehicle state, which will have full certainty.
                 front_interval = IntervalVehicle.create_from(front_vehicle).interval
         else:
             front_interval = None
@@ -362,12 +368,15 @@ class IntervalVehicle(LinearVehicle):
         """
         Get the list of lanes that could be followed by this vehicle.
 
-        :param lane_change_model: - model: assume that the vehicle will follow the lane of its model behaviour.
-                                  - all: assume that any lane change decision is possible at any timestep
-                                  - right: assume that a right lane change decision is possible at any timestep
+        :param lane_change_model:
+          - model: assume that the vehicle will follow the lane of its model behaviour.
+          - all: assume that any lane change decision is possible at any timestep
+          - right: assume that a right lane change decision is possible at any timestep
+
         :param squeeze: if True, remove duplicate lanes (at boundaries of the road)
         :return: the list of followed lane indexes
         """
+        self.target_lane_index: LaneIndex
         lanes = []
         if lane_change_model == "model":
             lanes = [self.target_lane_index]
@@ -385,9 +394,9 @@ class IntervalVehicle(LinearVehicle):
             ).is_reachable_from(
                 self.position
             ):
-                lanes += [(_from, _to, _id + 1)]
+                lanes.append((_from, _to, _id + 1))
             elif not squeeze:
-                lanes += [self.target_lane_index]  # Right lane is also current lane
+                lanes.append(self.target_lane_index)  # Right lane is also current lane
         return lanes
 
     def partial_observer_step(self, dt: float, alpha: float = 0) -> None:
@@ -447,12 +456,12 @@ class IntervalVehicle(LinearVehicle):
         self.trajectory.append(LinearVehicle.create_from(self))
         self.interval_trajectory.append(copy.deepcopy(self.interval))
 
-    def handle_collisions(self, other: RoadObject, dt: float) -> None:
+    def handle_collisions(self, other: RoadObject, dt: float = 0) -> None:
         """
         Worst-case collision check.
 
-        For robust planning, we assume that MDPVehicles collide with the uncertainty set of an IntervalVehicle,
-        which corresponds to worst-case outcome.
+        For robust planning, we assume that MDPVehicles collide with the uncertainty
+        set of an IntervalVehicle, which corresponds to worst-case outcome.
 
         :param other: the other vehicle
         :param dt: a timestep
@@ -472,8 +481,8 @@ class IntervalVehicle(LinearVehicle):
         ):
             return
 
-        # Projection of other vehicle to uncertainty rectangle. This is the possible position of this vehicle which is
-        # the most likely to collide with other vehicle
+        # Projection of other vehicle to uncertainty rectangle. This is the possible
+        # position of this vehicle which is the most likely to collide with others
         projection = np.minimum(
             np.maximum(other.position, self.interval.position[0]),
             self.interval.position[1],

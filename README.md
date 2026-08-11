@@ -6,12 +6,12 @@
 
 <p align="center">
     <a href="https://highway-env.farama.org/" target="_blank">
-        <img src="https://github.com/Farama-Foundation/HighwayEnv/blob/main/docs/_static/img/highway-text.png?raw=true" width="500px" />
+        <img src="https://highway-env.farama.org/main/_static/img/highway-text.png" width="500px" />
     </a>
 </p>
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/eleurent/highway-env/master/../gh-media/docs/media/highway-env.gif?raw=true"><br/>
+    <img src="https://highway-env.farama.org/main/_static/animations/highway-env.gif"><br/>
     <em>An episode of one of the environments available in HighwayEnv.</em>
 </p>
 
@@ -27,18 +27,34 @@ To install HighwayEnv, use:
 pip install highway-env
 ```
 
-We support Python 3.10+ on Linux and macOS.
+or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add highway-env          # adds to project dependencies and installs (preferred)
+uv pip install highway-env  # or install without adding to a project (pip install)
+```
+
+We support **Linux** and **macOS** primarily, with **Windows** support maintained on a best-effort basis.
 
 ## Environments
 
-HighwayEnv includes 6 driving scenario environments: `highway`, `merge`, `roundabout`, `parking`, `intersection`, and `racetrack`. The full list with descriptions and configuration options is available in the [documentation](https://highway-env.farama.org/environments/highway/).
+HighwayEnv includes 10 driving scenario families: `highway`, `intersection`, `exit`, `lane-keeping`, `merge`, `parking`, `racetrack`, `roundabout`, `two-way`, and `u-turn`, with several environments also offering fast, continuous-control, connected-lane, multi-agent, generic, large, or oval variants. The full list with descriptions and configuration options is available in the [documentation](https://highway-env.farama.org/main/environments/).
 
 <details>
 <summary>Previews</summary>
 
-| `highway` | `merge` | `roundabout` | `parking` | `intersection` | `racetrack` |
-|:---------:|:-------:|:------------:|:---------:|:--------------:|:-----------:|
-| <img src="https://raw.githubusercontent.com/eleurent/highway-env/master/../gh-media/docs/media/highway.gif?raw=true"/> | <img src="https://raw.githubusercontent.com/eleurent/highway-env/master/../gh-media/docs/media/merge-env.gif?raw=true"/> | <img src="https://raw.githubusercontent.com/eleurent/highway-env/master/../gh-media/docs/media/roundabout-env.gif?raw=true"/> | <img src="https://raw.githubusercontent.com/eleurent/highway-env/master/../gh-media/docs/media/parking-env.gif?raw=true"/> | <img src="https://raw.githubusercontent.com/eleurent/highway-env/master/../gh-media/docs/media/intersection-env.gif?raw=true"/> | <img src="https://raw.githubusercontent.com/eleurent/highway-env/master/../gh-media/docs/media/racetrack-env.gif?raw=true"/> |
+| | |
+|:---|:---:|
+| `highway` | ![highway](https://highway-env.farama.org/main/_static/animations/environments/highway.gif) |
+| `merge` | ![merge](https://highway-env.farama.org/main/_static/animations/environments/merge-env.gif) |
+| `roundabout` | ![roundabout](https://highway-env.farama.org/main/_static/animations/environments/roundabout-env.gif) |
+| `parking` | ![parking](https://highway-env.farama.org/main/_static/animations/environments/parking-env.gif) |
+| `intersection` | ![intersection](https://highway-env.farama.org/main/_static/animations/environments/intersection-env.gif) |
+| `racetrack` | ![racetrack](https://highway-env.farama.org/main/_static/animations/environments/racetrack-env.gif) |
+| `lane-keeping` | ![lane-keeping](https://highway-env.farama.org/main/_static/animations/environments/lane-keeping-env.gif) |
+| `two-way` | ![two-way](https://highway-env.farama.org/main/_static/animations/environments/two-way-env.gif) |
+| `exit` | ![exit](https://highway-env.farama.org/main/_static/animations/environments/exit-env.gif) |
+| `u-turn` | ![u-turn](https://highway-env.farama.org/main/_static/animations/environments/u-turn-env.gif) |
 
 </details>
 
@@ -46,14 +62,27 @@ HighwayEnv includes 6 driving scenario environments: `highway`, `merge`, `rounda
 
 ```python
 import gymnasium as gym
+import highway_env
 
-env = gym.make('highway-v0', render_mode='human')
+gym.register_envs(highway_env)
 
+# Initialise the environment
+env = gym.make("highway-v0", config={"lanes_count": 3}, render_mode="human")
+
+# Reset the environment to generate the first observation
 obs, info = env.reset()
-done = truncated = False
-while not (done or truncated):
-    action = ...  # Your agent code here
-    obs, reward, done, truncated, info = env.step(action)
+for _ in range(1000):
+    # this is where you would insert your policy
+    action = env.action_space.sample()
+
+    # step (transition) through the environment with the action
+    # receiving the next observation, reward and if the episode has terminated or truncated
+    obs, reward, terminated, truncated, info = env.step(action)
+
+    # If the episode has ended then we can reset to start a new episode
+    if terminated or truncated:
+        obs, info = env.reset()
+
 env.close()
 ```
 

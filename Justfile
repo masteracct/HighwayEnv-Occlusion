@@ -1,22 +1,32 @@
 set shell := ["bash", "-cu"]
 
-venv := ".venv-docs"
-python := venv + "/bin/python"
-
 default:
     @just --list
 
-docs-install:
-    python3 -m venv {{venv}}
-    {{python}} -m pip install --upgrade pip
-    {{python}} -m pip install -e .
-    {{python}} -m pip install -r docs/requirements.txt
+install:
+    uv sync --group dev --frozen
+    uv run --frozen pre-commit install
 
-docs-serve: docs-install
-    {{venv}}/bin/sphinx-autobuild docs docs/_build/html --open-browser
+docs-serve: install
+    uv run --frozen sphinx-autobuild docs docs/_build/html --open-browser
 
-docs-build: docs-install
-    {{venv}}/bin/sphinx-build -b html docs docs/_build/html
+docs-build: install docs-clean
+    uv run --frozen sphinx-build -b html docs docs/_build/html
 
 docs-clean:
     rm -rf docs/_build docs/jupyter_execute
+
+test:
+    uv run --frozen pytest --cov=./ --cov-report=xml
+
+coverage-xml:
+    uv run --frozen pytest --cov=highway_env --cov-report=xml
+
+coverage-total:
+    uv run --frozen pytest --cov=highway_env --cov-report=term --cov-fail-under=85
+
+# Diff coverage: default origin/main; pass remote and branch positionally.
+coverage-diff remote="origin" branch="main": coverage-xml
+    uv run --frozen diff-cover coverage.xml --compare-branch={{remote}}/{{branch}} --fail-under=80
+
+coverage: coverage-total coverage-diff

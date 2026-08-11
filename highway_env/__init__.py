@@ -4,7 +4,7 @@ import sys
 from gymnasium.envs.registration import register, registry
 
 
-__version__ = "1.12.0.dev1"
+__version__ = "1.12.1"
 
 try:
     from farama_notifications import notifications
@@ -99,6 +99,14 @@ def _register_highway_envs():
     register(
         id="merge-v1",
         entry_point="highway_env.envs.merge_env:ConnectedLaneMergeEnv",
+    )
+    register(
+        id="merge-generic-v0",
+        entry_point="highway_env.envs.merge_env:MergeGenericEnv",
+    )
+    register(
+        id="merge-generic-v1",
+        entry_point="highway_env.envs.merge_env:ConnectedLaneMergeGenericEnv",
     )
 
     # parking_env.py

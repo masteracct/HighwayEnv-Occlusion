@@ -51,7 +51,7 @@ class IDMVehicle(ControlledVehicle):
         position: Vector,
         heading: float = 0,
         speed: float = 0,
-        target_lane_index: int = None,
+        target_lane_index: LaneIndex = None,
         target_speed: float = None,
         route: Route = None,
         enable_lane_change: bool = True,
@@ -377,7 +377,7 @@ class LinearVehicle(IDMVehicle):
         position: Vector,
         heading: float = 0,
         speed: float = 0,
-        target_lane_index: int = None,
+        target_lane_index: LaneIndex = None,
         target_speed: float = None,
         route: Route = None,
         enable_lane_change: bool = True,
@@ -412,6 +412,7 @@ class LinearVehicle(IDMVehicle):
         self.STEERING_PARAMETERS = self.STEERING_RANGE[0] + ub * (
             self.STEERING_RANGE[1] - self.STEERING_RANGE[0]
         )
+        super().randomize_behavior()
 
     def acceleration(
         self,

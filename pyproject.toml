@@ -8,8 +8,13 @@ description = "An environment for simulated highway driving tasks."
 readme = "README.md"
 requires-python = ">= 3.10"
 authors = [{ name = "Edouard Leurent", email = "eleurent@gmail.com" }]
-license = { text = "MIT License" }
-keywords = ["Reinforcement Learning", "car simulation", "RL", "AI"]
+maintainers = [{ name = "Jin Huang", email = "hugo@hugohuang.com" }]
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = [
+    "Reinforcement Learning", "Car Simulation", "Traffic Simulation", "Machine Learning",
+    "RL", "AI", "ML",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
@@ -18,25 +23,25 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "License :: OSI Approved :: MIT License",
-    'Intended Audience :: Science/Research',
-    'Topic :: Scientific/Engineering :: Artificial Intelligence',
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "gymnasium >=1.0.0a2",
-    "farama-notifications >=0.0.1",
-    "numpy >=1.23.0",
-    "pygame-ce >=2.1.3",
+    "gymnasium>=1.0.0a2",
+    "farama-notifications>=0.0.1",
+    "numpy>=1.23.0",
+    "pygame-ce>=2.1.3",
     "matplotlib",
     "pandas",
-    "scipy"
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
 testing = [
+    "diff-cover",
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
+    "scipy",
 ]
 
 [project.urls]
@@ -44,9 +49,39 @@ Homepage = "https://farama.org"
 Repository = "https://github.com/Farama-Foundation/HighwayEnv"
 Documentation = "https://highway-env.farama.org/"
 "Bug Report" = "https://github.com/Farama-Foundation/HighwayEnv/issues"
+Changelog = "https://highway-env.farama.org/main/release_notes"
 
+# NOTE: These two lines have no effect currently, don't be confused
 [project.entry-points."gymnasium.envs.__root__"]
 highway-env = "highway_env:_register_highway_envs"
+
+[dependency-groups]
+test = [
+    "diff-cover",
+    "pytest",
+    "pytest-cov",
+    "scipy",
+]
+docs = [
+    "sphinx",
+    "sphinx-autobuild",
+    "myst-parser",
+    "celshast",
+    "sphinx_github_changelog",
+    "sphinxcontrib-bibtex",
+    "ipykernel",
+    "jupyter-sphinx",
+]
+style = [
+    "pre-commit",
+    "ruff",
+    "ty",
+]
+dev = [
+    { include-group = "test" },
+    { include-group = "docs" },
+    { include-group = "style" },
+]
 
 [tool.setuptools]
 include-package-data = true
@@ -66,3 +101,24 @@ extra_standard_library = ["typing_extensions"]
 indent = 4
 lines_after_imports = 2
 multi_line_output = 3
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    # "E",  # pycodestyle errors
+    # "F",  # pyflakes
+    # "UP", # pyupgrade
+    # "I",  # isort
+    # "D",  # pydocstyle
+    "B",  # bugbear
+]
+ignore = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["I", "E"]

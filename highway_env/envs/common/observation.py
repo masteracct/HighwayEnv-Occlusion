@@ -55,8 +55,9 @@ class GrayscaleObservation(ObservationType):
     The observation shape is C x W x H.
 
     Specific keys are expected in the configuration dictionary passed.
-    Example of observation dictionary in the environment config:
-        observation": {
+    Example of observation dictionary in the environment config::
+
+        "observation": {
             "type": "GrayscaleObservation",
             "observation_shape": (84, 84)
             "stack_size": 4,
@@ -316,7 +317,7 @@ class OccupancyGridObservation(ObservationType):
         )
         grid_shape = np.asarray(
             np.floor((self.grid_size[:, 1] - self.grid_size[:, 0]) / self.grid_step),
-            dtype=np.uint8,
+            dtype=np.intp,
         )
         self.grid = np.zeros((len(self.features), *grid_shape))
         self.features_range = features_range
